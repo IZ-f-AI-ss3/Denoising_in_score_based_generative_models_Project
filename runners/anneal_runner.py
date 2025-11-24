@@ -12,7 +12,7 @@ import torch.optim as optim
 from torchvision.datasets import MNIST, CIFAR10, SVHN
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Subset
-from ..datasets.celeba import CelebA
+from datasets.celeba import CelebA
 from models.cond_refinenet_dilated import CondRefineNetDilated
 from torchvision.utils import save_image, make_grid
 from PIL import Image
