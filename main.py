@@ -42,8 +42,7 @@ def parse_args_and_config():
         new_config = dict2namespace(config)
     else:
         with open(os.path.join(args.log, 'config.yml'), 'r') as f:
-            config = yaml.load(f, Loader=yaml.FullLoader)
-
+        config = yaml.load(f, Loader=yaml.UnsafeLoader)
         if isinstance(config, dict):
             new_config = dict2namespace(config)
         else:
