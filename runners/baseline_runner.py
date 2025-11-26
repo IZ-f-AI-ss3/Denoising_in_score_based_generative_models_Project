@@ -125,7 +125,7 @@ class BaselineRunner():
                 if self.config.data.logit_transform:
                     X = self.logit_transform(X)
 
-                loss = dsm_score_estimation(score, X, sigma=0.01)
+                loss = dsm_score_estimation(score, X, sigma=self.config.model.sigma)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -151,7 +151,7 @@ class BaselineRunner():
                         test_X = self.logit_transform(test_X)
 
                     with torch.no_grad():
-                        test_dsm_loss = dsm_score_estimation(score, test_X, sigma=0.01)
+                        test_dsm_loss = dsm_score_estimation(score, test_X, sigma=self.config.model.sigma)
 
                     tb_logger.add_scalar('test_dsm_loss', test_dsm_loss, global_step=step)
 
@@ -175,6 +175,20 @@ class BaselineRunner():
                 print("modulus of grad components: mean {}, max {}".format(grad.abs().mean(), grad.abs().max()))
 
             return images
+        
+    def half_denoising_Langevin_dynamics(self, x_mod, scorenet, sigma =None , n_steps=1000, step_lr=0.00002):
+        images = []
+
+        with torch.no_grad():
+            for _ in range(n_steps):
+                images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
+                noise = torch.randn_like(x_mod) 
+                # x_noisy = x_mod + sigma * noise
+                x_noisy = x_mod + step_lr * noise
+                grad = scorenet(x_noisy)
+                # x_noisy = x_noisy + 0.5 * (sigma**2) * grad
+                x_noisy = x_noisy + 0.5 * (step_lr**2) * grad
+                print("modulus of grad components: mean {}, max {}".format(grad.abs().mean(), grad.abs().max()))
 
     def test(self):
         states = torch.load(os.path.join(self.args.log, 'checkpoint.pth'), map_location=self.config.device)
@@ -207,7 +221,11 @@ class BaselineRunner():
             samples = samples.cuda()
 
             samples = torch.rand_like(samples)
-            all_samples = self.Langevin_dynamics(samples, score, 1000, 0.00002)
+            # Select Langevin dynamics based on config
+            if self.config.model.langevin_type == 'ordinary_langevin':
+                all_samples = self.Langevin_dynamics(samples, score, 1000, 0.00002)
+            elif self.config.model.langevin_type == 'half_denoising_langevin':
+                all_samples = self.half_denoising_Langevin_dynamics(samples, score, self.config.model.sigma , 1000, 0.00002)
 
             for i, sample in enumerate(tqdm.tqdm(all_samples)):
                 sample = sample.view(100, self.config.data.channels, self.config.data.image_size,
@@ -232,7 +250,11 @@ class BaselineRunner():
             samples = torch.rand(100, 3, self.config.data.image_size, self.config.data.image_size,
                                  device=self.config.device)
 
-            all_samples = self.Langevin_dynamics(samples, score, 1000, 0.00002)
+            # Select Langevin dynamics based on config
+            if self.config.model.langevin_type == 'ordinary_langevin':
+                all_samples = self.Langevin_dynamics(samples, score, 1000, 0.00002)
+            elif self.config.model.langevin_type == 'half_denoising_langevin':
+                all_samples = self.half_denoising_Langevin_dynamics(samples, score, 1000, 0.00002)
 
             for i, sample in enumerate(tqdm.tqdm(all_samples)):
                 sample = sample.view(100, self.config.data.channels, self.config.data.image_size,

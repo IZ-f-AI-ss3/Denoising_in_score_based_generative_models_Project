@@ -33,10 +33,13 @@ model:
   sigma_end: 0.01
   num_classes: 10
   batch_norm: false
+  sigma : 0.1 # for half_denoising_langevin
   ## configurations for CelebA, CIFAR10
 #  ngf: 128
   ### configurations for MNIST
   ngf: 64
+  ### configurations for sampling
+  langevin_type: "ordinary_langevin" # Options: 'ordinary_langevin' or 'half_denoising_langevin'
 
 optim:
   weight_decay: 0.000
