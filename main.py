@@ -25,6 +25,9 @@ def parse_args_and_config():
     parser.add_argument('--resume_training', action='store_true', help='Whether to resume training')
     parser.add_argument('-o', '--image_folder', type=str, default='images', help="The directory of image outputs")
 
+    # Argument for sampling method
+    parser.add_argument('--sampling', type=str, default='ordinary_langevin', help='Sampling technique for testing') # ordinary_langevin
+
     args = parser.parse_args()
     run_id = str(os.getpid())
     run_time = time.strftime('%Y-%b-%d-%H-%M-%S')
@@ -41,8 +44,13 @@ def parse_args_and_config():
         with open(os.path.join(args.log, 'config.yml'), 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
 
-        new_config = config
-
+        if isinstance(config, dict):
+            new_config = dict2namespace(config)
+        else:
+            new_config = config
+        
+        #  Inject Sampling argument
+        new_config.sampling = args.sampling
     if not args.test:
         if not args.resume_training:
             if os.path.exists(args.log):

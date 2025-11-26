@@ -78,9 +78,9 @@ class ScoreNetRunner():
             test_dataset = Subset(dataset, test_indices)
             dataset = Subset(dataset, train_indices)
 
-        dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, shuffle=True, num_workers=4)
+        dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, shuffle=True, num_workers=2)
         test_loader = DataLoader(test_dataset, batch_size=self.config.training.batch_size, shuffle=True,
-                                 num_workers=4)
+                                 num_workers=2)
 
         test_iter = iter(test_loader)
         self.config.input_dim = self.config.data.image_size ** 2 * self.config.data.channels

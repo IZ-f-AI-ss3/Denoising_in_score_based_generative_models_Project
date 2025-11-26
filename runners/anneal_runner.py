@@ -98,9 +98,9 @@ class AnnealRunner():
             test_dataset = SVHN(os.path.join(self.args.run, 'datasets', 'svhn_test'), split='test', download=True,
                                 transform=test_transform)
 
-        dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, shuffle=True, num_workers=4)
+        dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, shuffle=True, num_workers=2)
         test_loader = DataLoader(test_dataset, batch_size=self.config.training.batch_size, shuffle=True,
-                                 num_workers=4, drop_last=True)
+                                 num_workers=2, drop_last=True)
 
         test_iter = iter(test_loader)
         self.config.input_dim = self.config.data.image_size ** 2 * self.config.data.channels
@@ -328,7 +328,7 @@ class AnnealRunner():
                                  transforms.ToTensor(),
                              ]), download=True)
 
-            dataloader = DataLoader(dataset, batch_size=20, shuffle=True, num_workers=4)
+            dataloader = DataLoader(dataset, batch_size=20, shuffle=True, num_workers=2)
             refer_image, _ = next(iter(dataloader))
 
             samples = torch.rand(20, 20, 3, self.config.data.image_size, self.config.data.image_size,
@@ -365,7 +365,7 @@ class AnnealRunner():
                 dataset = SVHN(os.path.join(self.args.run, 'datasets', 'svhn'), split='train', download=True,
                                transform=transform)
 
-            dataloader = DataLoader(dataset, batch_size=20, shuffle=True, num_workers=4)
+            dataloader = DataLoader(dataset, batch_size=20, shuffle=True, num_workers=2)
             data_iter = iter(dataloader)
             refer_image, _ = next(data_iter)
 

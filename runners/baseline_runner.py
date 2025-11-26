@@ -38,6 +38,7 @@ class BaselineRunner():
         return torch.log(image) - torch.log1p(-image)
 
     def train(self):
+        print("======> We started training with the Base runner ...")
         if self.config.data.random_flip is False:
             tran_transform = test_transform = transforms.Compose([
                 transforms.Resize(self.config.data.image_size),
@@ -90,9 +91,9 @@ class BaselineRunner():
                                   ]), download=True)
 
 
-        dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, shuffle=True, num_workers=4)
+        dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, shuffle=True, num_workers=2)
         test_loader = DataLoader(test_dataset, batch_size=self.config.training.batch_size, shuffle=True,
-                                 num_workers=4, drop_last=True)
+                                 num_workers=2, drop_last=True)
 
         test_iter = iter(test_loader)
         self.config.input_dim = self.config.data.image_size ** 2 * self.config.data.channels
@@ -215,16 +216,17 @@ class BaselineRunner():
                 dataset = FashionMNIST(os.path.join(self.args.run, 'datasets', 'fmnist'), train=True, download=True,
                                        transform=transform)
 
-            dataloader = DataLoader(dataset, batch_size=100, shuffle=True, num_workers=4)
+            dataloader = DataLoader(dataset, batch_size=100, shuffle=True, num_workers=2)
             data_iter = iter(dataloader)
             samples, _ = next(data_iter)
             samples = samples.cuda()
 
             samples = torch.rand_like(samples)
             # Select Langevin dynamics based on config
-            if self.config.model.langevin_type == 'ordinary_langevin':
+            method = getattr(self.config, 'sampling', 'ordinary_langevin')
+            if method == 'ordinary_langevin':
                 all_samples = self.Langevin_dynamics(samples, score, 1000, 0.00002)
-            elif self.config.model.langevin_type == 'half_denoising_langevin':
+            elif method == 'half_denoising_langevin':
                 all_samples = self.half_denoising_Langevin_dynamics(samples, score, self.config.model.sigma , 1000, 0.00002)
 
             for i, sample in enumerate(tqdm.tqdm(all_samples)):
@@ -244,17 +246,18 @@ class BaselineRunner():
                                  transforms.ToTensor(),
                              ]), download=True)
 
-            dataloader = DataLoader(dataset, batch_size=64, shuffle=True, num_workers=4)
+            dataloader = DataLoader(dataset, batch_size=64, shuffle=True, num_workers=2)
             samples, _ = next(iter(dataloader))
 
             samples = torch.rand(100, 3, self.config.data.image_size, self.config.data.image_size,
                                  device=self.config.device)
 
             # Select Langevin dynamics based on config
-            if self.config.model.langevin_type == 'ordinary_langevin':
+            method = getattr(self.config, 'sampling', 'ordinary_langevin')
+            if method == 'ordinary_langevin':
                 all_samples = self.Langevin_dynamics(samples, score, 1000, 0.00002)
-            elif self.config.model.langevin_type == 'half_denoising_langevin':
-                all_samples = self.half_denoising_Langevin_dynamics(samples, score, 1000, 0.00002)
+            elif method == 'half_denoising_langevin':
+                all_samples = self.half_denoising_Langevin_dynamics(samples, score, self.config.model.sigma , 1000, 0.00002)
 
             for i, sample in enumerate(tqdm.tqdm(all_samples)):
                 sample = sample.view(100, self.config.data.channels, self.config.data.image_size,
@@ -275,7 +278,7 @@ class BaselineRunner():
                 dataset = CIFAR10(os.path.join(self.args.run, 'datasets', 'cifar10'), train=True, download=True,
                                   transform=transform)
 
-            dataloader = DataLoader(dataset, batch_size=100, shuffle=True, num_workers=4)
+            dataloader = DataLoader(dataset, batch_size=100, shuffle=True, num_workers=2)
             data_iter = iter(dataloader)
             samples, _ = next(data_iter)
             samples = samples.cuda()
