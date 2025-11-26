@@ -7,6 +7,8 @@ from models.gmm import GMM, Gaussian, GMMDist, Square, GMMDistAnneal
 import matplotlib.pyplot as plt
 import torch
 import seaborn as sns
+import os
+
 sns.set()
 sns.set_style('white')
 
@@ -230,6 +232,8 @@ class ToyRunner():
         sns.set(font_scale=1.3)
         sns.set_style('white')
         savefig = r'/content/Denoising_in_score_based_generative_models/tmp/toy_figs/'
+        os.makedirs(savefig, exist_ok=True)
+        print("Directory ready:", os.path.exists(savefig))
 
         teacher = GMMDistAnneal(dim=2)
         mesh = []
