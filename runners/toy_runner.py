@@ -231,7 +231,7 @@ class ToyRunner():
     def annealed_sampling_exp(self, left_bound=-8, right_bound=8):
         sns.set(font_scale=1.3)
         sns.set_style('white')
-        savefig = r'/content/Denoising_in_score_based_generative_models/tmp/toy_figs/'
+        savefig = os.path.join(self.args.log ,"toy_exp")
         os.makedirs(savefig, exist_ok=True)
         print("Directory ready:", os.path.exists(savefig))
 
