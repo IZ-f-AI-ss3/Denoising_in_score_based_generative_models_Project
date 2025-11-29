@@ -267,7 +267,9 @@ class AnnealRunner():
         if self.config.data.dataset == 'MNIST':
             samples = torch.rand(grid_size ** 2, 1, 28, 28, device=self.config.device)
             # Using custom_anneal_Langevin_dynamics for MNIST 
-            all_samples = self.custom_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+            # all_samples = self.custom_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+            all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+
 
             for i, sample in enumerate(tqdm.tqdm(all_samples, total=len(all_samples), desc='saving images')):
                 sample = sample.view(grid_size ** 2, self.config.data.channels, self.config.data.image_size,
