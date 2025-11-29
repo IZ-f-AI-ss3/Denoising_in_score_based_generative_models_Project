@@ -3,9 +3,9 @@ backup
 __pycache__
 real_nvp/mnist_*
 testing
-run/*
-run_*
-logs/
+# run/*
+# run_*
+# logs/
 clear_and_run.sh
 graph_data
 *.png
