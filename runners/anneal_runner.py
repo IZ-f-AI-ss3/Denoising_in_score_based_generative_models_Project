@@ -304,8 +304,7 @@ class AnnealRunner():
             samples = torch.rand(grid_size ** 2, 3, 32, 32, device=self.config.device)
 
             # all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
-            print("We are here")
-            all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) ##
+            all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
 
             for i, sample in enumerate(tqdm.tqdm(all_samples, total=len(all_samples), desc='saving images')):
                 sample = sample.view(grid_size ** 2, self.config.data.channels, self.config.data.image_size,
@@ -351,6 +350,35 @@ class AnnealRunner():
 
             return images
 
+def half_denoising_anneal_Langevin_dynamics_inpainting(self, x_mod, refer_image, scorenet, sigmas, n_steps_each=100,
+                                            step_lr=0.000008):
+        images = []
+
+        refer_image = refer_image.unsqueeze(1).expand(-1, x_mod.shape[1], -1, -1, -1)
+        refer_image = refer_image.contiguous().view(-1, 3, 32, 32)
+        x_mod = x_mod.view(-1, 3, 32 ,32)
+        half_refer_image = refer_image[..., :16]
+        with torch.no_grad():
+            for c, sigma in tqdm.tqdm(enumerate(sigmas), total=len(sigmas), desc="half-denoising annealed Langevin dynamics sampling"):
+                labels = torch.ones(x_mod.shape[0], device=x_mod.device) * c
+                labels = labels.long()
+                step_size = sigma 
+
+                corrupted_half_image = half_refer_image + torch.randn_like(half_refer_image) * sigma
+                x_mod[:, :, :, :16] = corrupted_half_image
+                for s in range(n_steps_each):
+                    images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
+                    noise = torch.randn_like(x_mod)
+                    x_tilde = x_mod + sigma * noise                    
+                    x_tilde[:, :, :, :16] = half_refer_image + sigma * noise[:, :, :, :16]
+                    grad = scorenet(x_tilde, labels)                    
+                    x_mod = x_tilde + (sigma ** 2 / 2) * grad                    
+                    x_mod[:, :, :, :16] = half_refer_image
+                    # print("class: {}, step_size: {}, mean {}, max {}".format(c, step_size, grad.abs().mean(),
+                    #                                                          grad.abs().max()))
+
+            return images
+
     def test_inpainting(self):
         states = torch.load(os.path.join(self.args.log, 'checkpoint.pth'), map_location=self.config.device)
         score = CondRefineNetDilated(self.config).to(self.config.device)
@@ -380,7 +408,9 @@ class AnnealRunner():
             samples = torch.rand(20, 20, 3, self.config.data.image_size, self.config.data.image_size,
                                  device=self.config.device)
 
-            all_samples = self.anneal_Langevin_dynamics_inpainting(samples, refer_image, score, sigmas, 100, 0.00002)
+            # all_samples = self.anneal_Langevin_dynamics_inpainting(samples, refer_image, score, sigmas, 100, 0.00002)
+            all_samples = self.half_denoising_anneal_Langevin_dynamics_inpainting(samples, refer_image, score, sigmas, 100, 0.00002)
+
             torch.save(refer_image, os.path.join(self.args.image_folder, 'refer_image.pth'))
 
             for i, sample in enumerate(tqdm.tqdm(all_samples)):
@@ -395,8 +425,8 @@ class AnnealRunner():
                     im = Image.fromarray(image_grid.mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy())
                     imgs.append(im)
 
-                save_image(image_grid, os.path.join(self.args.image_folder, 'image_completion_{}.png'.format(i)))
-                torch.save(sample, os.path.join(self.args.image_folder, 'image_completion_raw_{}.pth'.format(i)))
+                # save_image(image_grid, os.path.join(self.args.image_folder, 'image_completion_{}.png'.format(i)))
+                # torch.save(sample, os.path.join(self.args.image_folder, 'image_completion_raw_{}.pth'.format(i)))
 
         else:
             transform = transforms.Compose([
