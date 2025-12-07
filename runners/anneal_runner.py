@@ -316,7 +316,7 @@ class AnnealRunner():
 
             if sampling_method == 'ordinary':
                 all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
-            elif sampling_method == 'half_denoising' :
+            elif sampling_method == 'half_denoising':
                 all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
             else:
                 raise ValueError("You can only choose among ordinary and half_denoising methods")
@@ -343,7 +343,7 @@ class AnnealRunner():
         load_path = os.path.join(self.args.log, 'checkpoint.pth')
         print(f"DEBUG: Looking for checkpoint at: {load_path}") 
         print(f"DEBUG: Does it exist? {os.path.exists(load_path)}") 
-        
+
         states = torch.load(load_path, map_location=self.config.device)
 
         score = CondRefineNetDilated(self.config).to(self.config.device)

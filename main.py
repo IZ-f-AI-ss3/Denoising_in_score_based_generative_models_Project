@@ -54,7 +54,11 @@ def parse_args_and_config():
             new_config = config
         
         #  Inject Sampling argument
-        new_config.sampling = args.sampling
+        new_config.sampling_type = args.sampling_type
+        new_config.n_samples = args.n_samples
+        new_config.heavy_test = args.heavy_test
+
+        
     if not args.test:
         if not args.resume_training:
             if os.path.exists(args.log):
