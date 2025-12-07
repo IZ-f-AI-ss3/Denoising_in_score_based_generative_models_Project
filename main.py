@@ -25,8 +25,10 @@ def parse_args_and_config():
     parser.add_argument('--resume_training', action='store_true', help='Whether to resume training')
     parser.add_argument('-o', '--image_folder', type=str, default='images', help="The directory of image outputs")
 
+
     # Argument for sampling method
-    parser.add_argument('--sampling', type=str, default='ordinary_langevin', help='Sampling technique for testing') # ordinary_langevin
+    parser.add_argument('--sampling_type', type=str, default='ordinary', help='Sampling technique for testing') # or half_denoising
+    parser.add_argument('-grid_size', type=int, default=5, help='number of samples during test')
 
     args = parser.parse_args()
     run_id = str(os.getpid())

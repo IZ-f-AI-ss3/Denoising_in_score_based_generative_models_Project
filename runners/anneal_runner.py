@@ -271,22 +271,30 @@ class AnnealRunner():
 
         score.load_state_dict(states[0])
 
-        if not os.path.exists(self.args.image_folder):
-            os.makedirs(self.args.image_folder)
 
         sigmas = np.exp(np.linspace(np.log(self.config.model.sigma_begin), np.log(self.config.model.sigma_end),
                                     self.config.model.num_classes))
 
         score.eval()
-        grid_size = 5
+        grid_size = self.args.grid_size
+        sampling_method = self.args.sampling_type
+
+        if not os.path.exists(self.args.image_folder):
+            os.makedirs(self.args.image_folder)
+
+        sub_folder = os.path.join(self.args.image_folder,sampling_method)
+        os.makedirs(sub_folder , exist_ok=True)
 
         imgs = []
         if self.config.data.dataset == 'MNIST':
             samples = torch.rand(grid_size ** 2, 1, 28, 28, device=self.config.device)
             # Using custom_anneal_Langevin_dynamics for MNIST 
-            
-            all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 20, 0.00002)
-            # all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 20, 0.00002)
+            if sampling_method == 'ordinary':
+                all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+            elif sampling_method == 'half_denoising' :
+                all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+            else:
+                raise ValueError("You can only choose among ordinary and half_denoising methods")
 
             for i, sample in enumerate(tqdm.tqdm(all_samples, total=len(all_samples), desc='saving images')):
                 sample = sample.view(grid_size ** 2, self.config.data.channels, self.config.data.image_size,
@@ -300,15 +308,18 @@ class AnnealRunner():
                     im = Image.fromarray(image_grid.mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy())
                     imgs.append(im)
 
-                # save_image(image_grid, os.path.join(self.args.image_folder, 'image_{}.png'.format(i)))
-                # torch.save(sample, os.path.join(self.args.image_folder, 'image_raw_{}.pth'.format(i)))
-
+                save_image(image_grid, os.path.join(sub_folder, 'image_{}.png'.format(i)))
+                torch.save(sample, os.path.join(sub_folder, 'image_raw_{}.pth'.format(i)))
 
         else:
             samples = torch.rand(grid_size ** 2, 3, 32, 32, device=self.config.device)
 
-            # all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
-            all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
+            if sampling_method == 'ordinary':
+                all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+            elif sampling_method == 'half_denoising' :
+                all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
+            else:
+                raise ValueError("You can only choose among ordinary and half_denoising methods")
 
             for i, sample in enumerate(tqdm.tqdm(all_samples, total=len(all_samples), desc='saving images')):
                 sample = sample.view(grid_size ** 2, self.config.data.channels, self.config.data.image_size,
@@ -322,10 +333,10 @@ class AnnealRunner():
                     im = Image.fromarray(image_grid.mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy())
                     imgs.append(im)
 
-                # save_image(image_grid, os.path.join(self.args.image_folder, 'image_{}.png'.format(i)), nrow=10)
-                # torch.save(sample, os.path.join(self.args.image_folder, 'image_raw_{}.pth'.format(i)))
+                save_image(image_grid, os.path.join(sub_folder, 'image_{}.png'.format(i)), nrow=10)
+                torch.save(sample, os.path.join(sub_folder, 'image_raw_{}.pth'.format(i)))
 
-        imgs[0].save(os.path.join(self.args.image_folder, "movie.gif"), save_all=True, append_images=imgs[1:], duration=1, loop=0)
+        imgs[0].save(os.path.join(sub_folder, "movie.gif"), save_all=True, append_images=imgs[1:], duration=1, loop=0)
 
     def anneal_Langevin_dynamics_inpainting(self, x_mod, refer_image, scorenet, sigmas, n_steps_each=100,
                                             step_lr=0.000008):
