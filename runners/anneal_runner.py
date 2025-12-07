@@ -252,7 +252,7 @@ class AnnealRunner():
 
                     noise = torch.randn_like(x_mod)
                     # x_tilde = xt + sigma * zt
-                    x_tilde = x_mod + step_size * noise
+                    x_tilde = x_mod + np.sqrt(step_size) * noise
                     # x_tilde = x_mod + sigma * noise
 
                     # score on x_tilde
