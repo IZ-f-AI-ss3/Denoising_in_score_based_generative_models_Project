@@ -392,7 +392,7 @@ class AnnealRunner():
                 save_image(sample, os.path.join(sub_folder, f'img_{img_id}.png'))
                 img_id += 1
                 # print(f"Saved batch {img_id} images to {sub_folder}. Ready for FID calculation.")
-            print(f"Finished batch {k} % {n_samples // batch_size} ")
+            print(f"Finished batch {k + 1} % {n_samples // batch_size} ")
 
 
     def anneal_Langevin_dynamics_inpainting(self, x_mod, refer_image, scorenet, sigmas, n_steps_each=100,
