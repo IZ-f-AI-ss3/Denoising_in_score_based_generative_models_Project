@@ -246,17 +246,21 @@ class AnnealRunner():
             for c, sigma in tqdm.tqdm(enumerate(sigmas), total=len(sigmas), desc='half-denoising Langevin dynamics sampling'):
                 labels = torch.ones(x_mod.shape[0], device=x_mod.device) * c
                 labels = labels.long()
-                # step_size = step_lr * (sigma / sigmas[-1]) ** 2
+                step_size = step_lr * (sigma / sigmas[-1]) ** 2
                 for s in range(n_steps_each):
                     images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
 
                     noise = torch.randn_like(x_mod)
                     # x_tilde = xt + sigma * zt
-                    x_tilde = x_mod + sigma * noise
+                    x_tilde = x_mod + step_size * noise
+                    # x_tilde = x_mod + sigma * noise
+
                     # score on x_tilde
                     grad = scorenet(x_tilde, labels)
+
                     # xt+1 = x_tilde + (sigma^2 / 2) * score(x_tilde)
-                    x_mod = x_tilde + (sigma ** 2 / 2) * grad
+                    x_mod = x_tilde + (step_size / 2) * grad
+                    # x_mod = x_tilde + (sigma ** 2 / 2) * grad
 
             return images
 
