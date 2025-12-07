@@ -128,16 +128,25 @@ def main():
     print(config)
     print("<" * 80)
 
-    try:
-        runner = eval(args.runner)(args, config)
-        if not args.test and not args.heavy_test:
-            runner.train()
-        elif args.heavy_test :
-            runner.batched_test()
-        else :
-            runner.test()
-    except:
-        logging.error(traceback.format_exc())
+    # try:
+    #     runner = eval(args.runner)(args, config)
+    #     if not args.test and not args.heavy_test:
+    #         runner.train()
+    #     elif args.heavy_test:
+    #         runner.batched_test()
+    #     else:
+    #         runner.test()
+    # except:
+    #     logging.error(traceback.format_exc())
+
+    runner = eval(args.runner)(args, config)
+
+    if not args.test and not args.heavy_test:
+        runner.train()
+    elif args.heavy_test:
+        runner.batched_test()
+    else:
+        runner.test()
 
     return 0
 
