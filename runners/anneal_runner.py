@@ -341,9 +341,6 @@ class AnnealRunner():
 
     def batched_test(self):
         load_path = os.path.join(self.args.log, 'checkpoint.pth')
-        print(f"DEBUG: Looking for checkpoint at: {load_path}") 
-        print(f"DEBUG: Does it exist? {os.path.exists(load_path)}") 
-
         states = torch.load(load_path, map_location=self.config.device)
 
         score = CondRefineNetDilated(self.config).to(self.config.device)
