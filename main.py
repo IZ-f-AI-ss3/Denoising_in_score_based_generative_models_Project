@@ -39,7 +39,7 @@ def parse_args_and_config():
     args.log = os.path.join(args.run, 'logs', args.doc)
 
     # parse config file
-    if not args.test:
+    if not args.test and not args.heavy_test:
         with open(os.path.join('configs', args.config), 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -59,7 +59,7 @@ def parse_args_and_config():
         new_config.heavy_test = args.heavy_test
 
         
-    if not args.test:
+    if not args.test and not args.heavy_test:
         if not args.resume_training:
             if os.path.exists(args.log):
                 shutil.rmtree(args.log)
@@ -132,25 +132,16 @@ def main():
     print(config)
     print("<" * 80)
 
-    # try:
-    #     runner = eval(args.runner)(args, config)
-    #     if not args.test and not args.heavy_test:
-    #         runner.train()
-    #     elif args.heavy_test:
-    #         runner.batched_test()
-    #     else:
-    #         runner.test()
-    # except:
-    #     logging.error(traceback.format_exc())
-
-    runner = eval(args.runner)(args, config)
-
-    if not args.test and not args.heavy_test:
-        runner.train()
-    elif args.heavy_test:
-        runner.batched_test()
-    else:
-        runner.test()
+    try:
+        runner = eval(args.runner)(args, config)
+        if not args.test and not args.heavy_test:
+            runner.train()
+        elif args.heavy_test:
+            runner.batched_test()
+        else:
+            runner.test()
+    except:
+        logging.error(traceback.format_exc())
 
     return 0
 
