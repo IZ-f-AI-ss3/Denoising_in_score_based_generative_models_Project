@@ -22,13 +22,15 @@ def parse_args_and_config():
     parser.add_argument('--comment', type=str, default='', help='A string for experiment comment')
     parser.add_argument('--verbose', type=str, default='info', help='Verbose level: info | debug | warning | critical')
     parser.add_argument('--test', action='store_true', help='Whether to test the model')
+    parser.add_argument('--heavy_test', action='store_true', help='Whether to test the model')
+
     parser.add_argument('--resume_training', action='store_true', help='Whether to resume training')
     parser.add_argument('-o', '--image_folder', type=str, default='images', help="The directory of image outputs")
 
 
     # Argument for sampling method
     parser.add_argument('--sampling_type', type=str, default='ordinary', help='Sampling technique for testing') # or half_denoising
-    parser.add_argument('-grid_size', type=int, default=5, help='number of samples during test')
+    parser.add_argument('--n_samples', type=int, default=25, help='number of samples during test')
 
     args = parser.parse_args()
     run_id = str(os.getpid())
@@ -128,9 +130,11 @@ def main():
 
     try:
         runner = eval(args.runner)(args, config)
-        if not args.test:
+        if not args.test and not args.heavy_test:
             runner.train()
-        else:
+        elif args.heavy_test :
+            runner.batched_test()
+        else :
             runner.test()
     except:
         logging.error(traceback.format_exc())

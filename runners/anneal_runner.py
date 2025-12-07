@@ -276,7 +276,7 @@ class AnnealRunner():
                                     self.config.model.num_classes))
 
         score.eval()
-        grid_size = self.args.grid_size
+        grid_size = 5
         sampling_method = self.args.sampling_type
 
         if not os.path.exists(self.args.image_folder):
@@ -337,6 +337,60 @@ class AnnealRunner():
                 torch.save(sample, os.path.join(sub_folder, 'image_raw_{}.pth'.format(i)))
 
         imgs[0].save(os.path.join(sub_folder, "movie.gif"), save_all=True, append_images=imgs[1:], duration=1, loop=0)
+
+
+    def batched_test(self):
+        states = torch.load(os.path.join(self.args.log, 'checkpoint.pth'), map_location=self.config.device)
+        score = CondRefineNetDilated(self.config).to(self.config.device)
+        score = torch.nn.DataParallel(score)
+
+        score.load_state_dict(states[0])
+
+
+        sigmas = np.exp(np.linspace(np.log(self.config.model.sigma_begin), np.log(self.config.model.sigma_end),
+                                    self.config.model.num_classes))
+
+        score.eval()
+
+        n_samples = self.args.n_samples
+        batch_size = 100
+
+        sampling_method = self.args.sampling_type
+
+        if not os.path.exists(self.args.image_folder):
+            os.makedirs(self.args.image_folder)
+
+        sub_folder = os.path.join(self.args.image_folder,sampling_method)
+        os.makedirs(sub_folder , exist_ok=True)
+
+        img_id = 0  
+        
+        for k in tqdm.tqdm(range(n_samples // batch_size)):
+
+            if self.config.data.dataset == 'MNIST':
+                samples = torch.rand(batch_size, 1, 28, 28, device=self.config.device)
+            else:
+                samples = torch.rand(batch_size, 3, 32, 32, device=self.config.device)
+
+            if sampling_method == 'ordinary':
+                all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+            elif sampling_method == 'half_denoising' :
+                all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
+            else:
+                raise ValueError("You can only choose among ordinary and half_denoising methods")
+            
+            final_batch = all_samples[-1] # only the final image
+            for i in range(batch_size):
+                sample = final_batch[i]
+
+                if self.config.data.logit_transform:
+                    sample = torch.sigmoid(sample)
+                
+                save_image(sample, os.path.join(sub_folder, f'img_{img_id}.png'))
+                img_id += 1
+                # print(f"Saved batch {img_id} images to {sub_folder}. Ready for FID calculation.")
+            print(f"Finished batch {k} % {n_samples // batch_size} ")
+
 
     def anneal_Langevin_dynamics_inpainting(self, x_mod, refer_image, scorenet, sigmas, n_steps_each=100,
                                             step_lr=0.000008):
