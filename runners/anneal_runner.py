@@ -252,14 +252,14 @@ class AnnealRunner():
 
                     noise = torch.randn_like(x_mod)
                     # x_tilde = xt + sigma * zt
-                    x_tilde = x_mod + np.sqrt(step_size) * noise
+                    x_tilde = x_mod + np.sqrt(2*step_size) * noise
                     # x_tilde = x_mod + sigma * noise
 
                     # score on x_tilde
                     grad = scorenet(x_tilde, labels)
 
                     # xt+1 = x_tilde + (sigma^2 / 2) * score(x_tilde)
-                    x_mod = x_tilde + (step_size / 2) * grad
+                    x_mod = x_tilde + step_size * grad
                     # x_mod = x_tilde + (sigma ** 2 / 2) * grad
 
             return images
@@ -341,6 +341,7 @@ class AnnealRunner():
 
     def batched_test(self):
         load_path = os.path.join(self.args.log, 'checkpoint.pth')
+     
         states = torch.load(load_path, map_location=self.config.device)
 
         score = CondRefineNetDilated(self.config).to(self.config.device)
