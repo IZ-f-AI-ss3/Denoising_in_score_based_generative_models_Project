@@ -340,7 +340,12 @@ class AnnealRunner():
 
 
     def batched_test(self):
-        states = torch.load(os.path.join(self.args.log, 'checkpoint.pth'), map_location=self.config.device)
+        load_path = os.path.join(self.args.log, 'checkpoint.pth')
+        print(f"DEBUG: Looking for checkpoint at: {load_path}") 
+        print(f"DEBUG: Does it exist? {os.path.exists(load_path)}") 
+        
+        states = torch.load(load_path, map_location=self.config.device)
+
         score = CondRefineNetDilated(self.config).to(self.config.device)
         score = torch.nn.DataParallel(score)
 
@@ -364,7 +369,7 @@ class AnnealRunner():
         os.makedirs(sub_folder , exist_ok=True)
 
         img_id = 0  
-        
+
         for k in tqdm.tqdm(range(n_samples // batch_size)):
 
             if self.config.data.dataset == 'MNIST':
