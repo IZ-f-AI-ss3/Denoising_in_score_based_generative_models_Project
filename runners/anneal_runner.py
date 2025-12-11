@@ -201,7 +201,7 @@ class AnnealRunner():
             return images
 
     def anneal_Langevin_dynamics(self, x_mod, scorenet, sigmas, n_steps_each=100, step_lr=0.00002):
-        images = []
+        # images = []
 
         with torch.no_grad():
             for c, sigma in tqdm.tqdm(enumerate(sigmas), total=len(sigmas), desc='annealed Langevin dynamics sampling'):
@@ -209,14 +209,14 @@ class AnnealRunner():
                 labels = labels.long()
                 step_size = step_lr * (sigma / sigmas[-1]) ** 2
                 for s in range(n_steps_each):
-                    images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
+                    # images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
                     noise = torch.randn_like(x_mod) * np.sqrt(step_size * 2)
                     grad = scorenet(x_mod, labels)
                     x_mod = x_mod + step_size * grad + noise
                     # print("class: {}, step_size: {}, mean {}, max {}".format(c, step_size, grad.abs().mean(),
                     #                                                          grad.abs().max()))
 
-            return images
+            return [x_mod.cpu()] #images
 
 
     # def custom_anneal_Langevin_dynamics(self, x_mod, scorenet, sigmas, n_steps_each=100, step_lr=0.00002):
@@ -240,7 +240,7 @@ class AnnealRunner():
     #         return images
 
     def half_denoising_anneal_Langevin_dynamics(self, x_mod, scorenet, sigmas, n_steps_each=100, step_lr=0.00002):
-        images = []
+        # images = []
 
         with torch.no_grad():
             for c, sigma in tqdm.tqdm(enumerate(sigmas), total=len(sigmas), desc='half-denoising Langevin dynamics sampling'):
@@ -248,7 +248,7 @@ class AnnealRunner():
                 labels = labels.long()
                 step_size = step_lr * (sigma / sigmas[-1]) ** 2
                 for s in range(n_steps_each):
-                    images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
+                    # images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
 
                     noise = torch.randn_like(x_mod)
                     # x_tilde = xt + sigma * zt
@@ -262,7 +262,7 @@ class AnnealRunner():
                     x_mod = x_tilde + step_size * grad
                     # x_mod = x_tilde + (sigma ** 2 / 2) * grad
 
-            return images
+            return [x_mod.cpu()] # images
 
     def test(self):
         states = torch.load(os.path.join(self.args.log, 'checkpoint.pth'), map_location=self.config.device)
@@ -349,7 +349,6 @@ class AnnealRunner():
 
         score.load_state_dict(states[0])
 
-
         sigmas = np.exp(np.linspace(np.log(self.config.model.sigma_begin), np.log(self.config.model.sigma_end),
                                     self.config.model.num_classes))
 
@@ -363,10 +362,14 @@ class AnnealRunner():
         if not os.path.exists(self.args.image_folder):
             os.makedirs(self.args.image_folder)
 
-        sub_folder = os.path.join(self.args.image_folder,sampling_method)
-        os.makedirs(sub_folder , exist_ok=True)
+        # sub_folder = os.path.join(self.args.image_folder,sampling_method)
+        # os.makedirs(sub_folder , exist_ok=True)
+
+        save_name = 'samples_ordinary.pt' if sampling_method == 'ordinary' else 'samples_half_denoising.pt'
+        save_path = os.path.join(self.args.image_folder, save_name)
 
         img_id = 0  
+        all_collected_samples = []
 
         for k in tqdm.tqdm(range(n_samples // batch_size)):
 
@@ -383,17 +386,36 @@ class AnnealRunner():
                 raise ValueError("You can only choose among ordinary and half_denoising methods")
             
             final_batch = all_samples[-1] # only the final image
-            for i in range(batch_size):
-                sample = final_batch[i]
 
-                if self.config.data.logit_transform:
-                    sample = torch.sigmoid(sample)
+            if self.config.data.logit_transform:
+                final_batch = torch.sigmoid(final_batch)
+        
+            final_batch = final_batch.clamp(0, 1)
+            
+            # 3. Convert to uint8 (0-255) to save massive amounts of RAM
+            # (Float32 takes 4x more space; for 50k images this is critical)
+            final_batch_uint8 = (final_batch * 255).to(torch.uint8).cpu()
+            
+            all_collected_samples.append(final_batch_uint8)
+            
+            img_id += batch_size
+            print(f"Collected batch {k + 1} / {n_samples // batch_size} in RAM")
+
+            # for i in range(batch_size):
+            #     sample = final_batch[i]
+
+            #     if self.config.data.logit_transform:
+            #         sample = torch.sigmoid(sample)
                 
-                save_image(sample, os.path.join(sub_folder, f'img_{img_id}.png'))
-                img_id += 1
-                # print(f"Saved batch {img_id} images to {sub_folder}. Ready for FID calculation.")
-            print(f"Finished batch {k + 1} % {n_samples // batch_size} ")
+            #     save_image(sample, os.path.join(sub_folder, f'img_{img_id}.png'))
+            #     img_id += 1
+            #     # print(f"Saved batch {img_id} images to {sub_folder}. Ready for FID calculation.")
+            # print(f"Finished batch {k + 1} % {n_samples // batch_size} ")
 
+        full_tensor = torch.cat(all_collected_samples, dim=0) # Shape: [50000, 3, 32, 32]
+
+        torch.save(full_tensor, save_path)
+        print(f"Saved {len(full_tensor)} images to {save_path}")
 
     def anneal_Langevin_dynamics_inpainting(self, x_mod, refer_image, scorenet, sigmas, n_steps_each=100,
                                             step_lr=0.000008):
