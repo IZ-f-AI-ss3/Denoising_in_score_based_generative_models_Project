@@ -388,7 +388,8 @@ class AnnealRunner():
 
                 if self.config.data.logit_transform:
                     sample = torch.sigmoid(sample)
-                    # sample = sample.clamp(0, 1)
+                
+                # sample = sample.clamp(0, 1)
                 
                 save_image(sample, os.path.join(sub_folder, f'img_{img_id}.png'))
                 img_id += 1
