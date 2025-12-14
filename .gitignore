@@ -12,3 +12,12 @@ graph_data
 preprocessing/*.csv
 preprocessing/*.txt
 preprocessing/*.data
+
+
+run/logs/celeba.zip
+run/logs/mnist.zip
+samples_debug.zip
+samples_debug_pt.zip
+samples_debug_pt_new.zip
+samples_debug_pt_new/
+samples_debug_pt_old.zip
