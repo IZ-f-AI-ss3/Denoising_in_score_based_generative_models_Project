@@ -335,6 +335,7 @@ class AnnealRunner():
         os.makedirs(sub_folder , exist_ok=True)
 
         imgs = []
+        
         if self.config.data.dataset == 'MNIST':
             samples = torch.rand(grid_size ** 2, 1, 28, 28, device=self.config.device)
             # Using custom_anneal_Langevin_dynamics for MNIST 
