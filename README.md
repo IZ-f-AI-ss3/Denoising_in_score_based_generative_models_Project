@@ -81,9 +81,9 @@ Sampling is computationally expensive; generating 10k images may take several ho
 
 <table>
 <tr>
-<th>1 Half-Denoising </th>
-<th>2 Half-Denoising </th>
-<th>3 $\alpha$ Half-denoising </th>
+<th>1 Annealed Langevin </th>
+<th>2 Annealed Half-Denoising </th>
+<th>3 Annealed $\alpha$ Half-denoising </th>
 </tr>
 <tr>
 
