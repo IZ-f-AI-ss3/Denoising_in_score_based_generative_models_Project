@@ -1,12 +1,12 @@
 # Denoising in Score-Based Generative Models
 
-This repository studies **sampling strategies for score-based generative models**, extending **Annealed Langevin Dynamics** (Song & Ermon, 2019) with a simple **Half-Denoising** modification to reduce sampling bias while preserving good mode exploration.
+This repository studies **sampling strategies for score-based generative models**, extending **Annealed Langevin Dynamics** (Song & Ermon, 2019) with a simple **Half-Denoising** (Hyvarinen, 2025) modification to reduce sampling bias while preserving good mode exploration.
 
 We compare:
 - **Standard Annealed Langevin Dynamics**
 - **Annealed Half-Denoising (ours)**
 
-Experiments are conducted on **MNIST** and **CIFAR-10** using pretrained NCSN checkpoints.  
+Experiments are conducted on **MNIST**, **CELEBA** and **CIFAR-10** using pretrained NCSN checkpoints.  
 This repository accompanies a course project for **Probabilistic Graphical Models (MVA, ENS Paris-Saclay)**.
 
 ---
@@ -42,7 +42,7 @@ All sampling is run via main.py using AnnealRunner.
 ```python
 python main.py \
   --runner AnnealRunner \
-  --test \
+  --heavy_test \
   --doc cifar10 \
   --sampling_type annealed \
   -  -o samples/anneal
@@ -52,7 +52,7 @@ python main.py \
 ```python
 python main.py \
   --runner AnnealRunner \
-  --test \
+  --heavy_test \
   --doc cifar10 \
   --sampling_type half_denoising \
   --o samples
