@@ -76,7 +76,8 @@ Quantitative metrics (FID, Inception Score) and visual comparisons are computed 
 The notebook uses `torch-fidelity` for efficiency and consistency with the 2019 paper's benchmarking.
 
 ## Notes
-Sampling is computationally expensive; generating 10k images may take several hours on a single GPU.
+- We use Kaggle which offers uninterrupted access to GPU (up to 30h/week) for sampling. We opt for colab for evaluation.
+- Sampling is computationally expensive; generating 10k images may take several hours on a single GPU.
 <br>
 <br>
 
@@ -101,7 +102,7 @@ Sampling is computationally expensive; generating 10k images may take several ho
 </td>
 <td>
 
-![Celeba Half-Denoising](assets/movie_half_denoising_alpha_step.gif)
+![Celeba Half-Denoising](assets/movie_celeba_half_denoising.gif)
 
 </td>
 
