@@ -342,7 +342,7 @@ class AnnealRunner():
                 all_samples = self.anneal_non_batched_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
             elif sampling_method == 'half_denoising' :
                 all_samples = self.half_denoising_anneal_non_batched_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
-             elif sampling_method == 'half_initial_denoising' :
+            elif sampling_method == 'half_initial_denoising' :
                 all_samples = self.half_denoising_big_sigma_anneal_non_batched_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
             else:
                 raise ValueError("You can only choose among ordinary and half_denoising methods")
