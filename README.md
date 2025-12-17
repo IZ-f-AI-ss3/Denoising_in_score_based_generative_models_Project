@@ -55,7 +55,9 @@ python main.py \
   --test \
   --doc cifar10 \
   --sampling_type half_denoising \
-  -o samples/half_denoising
+  --o samples
+  --doc celeba
+  --n_samples 11000
 ```
 
 Both commands:
