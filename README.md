@@ -81,8 +81,8 @@ Sampling is computationally expensive; generating 10k images may take several ho
 
 <table>
 <tr>
-<th>BEFORE</th>
-<th>AFTER</th>
+<th>BEFORE (Half-Denoising)</th>
+<th>AFTER ' ($\alpha$ Half-denoising)</th>
 </tr>
 <tr>
 <td>
