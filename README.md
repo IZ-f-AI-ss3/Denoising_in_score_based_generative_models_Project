@@ -44,7 +44,7 @@ python main.py \
   --runner AnnealRunner \
   --heavy_test \
   --doc cifar10 \
-  --sampling_type annealed \
+  --sampling_type ordinary \
   -  -o samples/anneal
 ```
 
