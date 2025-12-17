@@ -70,15 +70,17 @@ Both commands:
 ## Results and Evaluation
 Quantitative metrics (FID, Inception Score) and visual comparisons are computed using the notebooks in notebooks/, following the same workflow shown there:
 - Generate samples
-- Run the evaluation notebook
+- Run the evaluation notebook on colab.
 - Export figures and metrics
+
+The notebook uses `torch-fidelity` for efficiency and consistency with the 2019 paper's benchmarking.
 
 ## Notes
 Sampling is computationally expensive; generating 10k images may take several hours on a single GPU.
 <br>
 <br>
 
-
+## The different algorithms
 <table>
 <tr>
 <th>1 Annealed Langevin </th>
