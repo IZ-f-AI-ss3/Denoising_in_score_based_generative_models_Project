@@ -78,5 +78,22 @@ Sampling is computationally expensive; generating 10k images may take several ho
 <br>
 <br>
 
-![Celeba](assets/celeba_large.gif)
 
+<table>
+<tr>
+<th>BEFORE</th>
+<th>AFTER</th>
+</tr>
+<tr>
+<td>
+
+![Celeba High Step](assets/movie_half_denoising_celeba_high_step.gif)
+
+</td>
+<td>
+
+![Celeba Half-Denoising](assets/movie_celeba_half_denoising.gif)
+
+</td>
+</tr>
+</table>
