@@ -356,7 +356,7 @@ class AnnealRunner():
         score.eval()
 
         n_samples = self.args.n_samples
-        batch_size = 100
+        batch_size = 400
 
         sampling_method = self.args.sampling_type
 
