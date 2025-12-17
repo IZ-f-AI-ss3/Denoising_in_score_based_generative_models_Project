@@ -75,3 +75,8 @@ Quantitative metrics (FID, Inception Score) and visual comparisons are computed 
 
 ## Notes
 Sampling is computationally expensive; generating 10k images may take several hours on a single GPU.
+<br>
+<br>
+
+| CelebA |  ![Celeba](assets/celeba_large.gif)|
+
