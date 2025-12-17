@@ -81,10 +81,18 @@ Sampling is computationally expensive; generating 10k images may take several ho
 
 <table>
 <tr>
-<th>BEFORE (Half-Denoising)</th>
-<th>AFTER ($\alpha$ Half-denoising)</th>
+<th>1 Half-Denoising </th>
+<th>2 Half-Denoising </th>
+<th>3 $\alpha$ Half-denoising </th>
 </tr>
 <tr>
+
+<td>
+
+![Celeba Half-Denoising](assets/movie_ordinar_celeba.gif)
+
+</td>
+
 <td>
 
 ![Celeba High Step](assets/movie_half_denoising_celeba_high_step.gif)
@@ -95,5 +103,6 @@ Sampling is computationally expensive; generating 10k images may take several ho
 ![Celeba Half-Denoising](assets/movie_celeba_half_denoising.gif)
 
 </td>
+
 </tr>
 </table>
