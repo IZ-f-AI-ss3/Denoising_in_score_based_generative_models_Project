@@ -102,7 +102,7 @@ The notebook uses `torch-fidelity` for efficiency and consistency with the 2019 
 </td>
 <td>
 
-![Celeba Half-Denoising](assets/movie_celeba_half_denoising.gif)
+![Celeba Half-Denoising](assets/movie_half_denoising_alpha_step.gif)
 
 </td>
 
