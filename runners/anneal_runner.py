@@ -358,7 +358,7 @@ class AnnealRunner():
                 save_image(image_grid, os.path.join(sub_folder, 'image_{}.png'.format(i)), nrow=10)
                 torch.save(sample, os.path.join(sub_folder, 'image_raw_{}.pth'.format(i)))
 
-        imgs[0].save(os.path.join(sub_folder, "movie.gif"), save_all=True, append_images=imgs[1:], duration=1, loop=0)
+        imgs[0].save(os.path.join(sub_folder, "movie.gif"), save_all=True, append_images=imgs[1:], duration=100, loop=0)
 
 
     def batched_test(self):
@@ -418,84 +418,6 @@ class AnnealRunner():
                 # print(f"Saved batch {img_id} images to {sub_folder}. Ready for FID calculation.")
             print(f"Finished batch {k + 1} % {n_samples // batch_size} ")
 
-
-    # def batched_test(self):
-    #     load_path = os.path.join(self.args.log, 'checkpoint.pth')
-     
-    #     states = torch.load(load_path, map_location=self.config.device)
-
-    #     score = CondRefineNetDilated(self.config).to(self.config.device)
-    #     score = torch.nn.DataParallel(score)
-
-    #     score.load_state_dict(states[0])
-
-    #     sigmas = np.exp(np.linspace(np.log(self.config.model.sigma_begin), np.log(self.config.model.sigma_end),
-    #                                 self.config.model.num_classes))
-
-    #     score.eval()
-
-    #     n_samples = self.args.n_samples
-    #     batch_size = 100
-
-    #     sampling_method = self.args.sampling_type
-
-    #     if not os.path.exists(self.args.image_folder):
-    #         os.makedirs(self.args.image_folder)
-
-    #     # sub_folder = os.path.join(self.args.image_folder,sampling_method)
-    #     # os.makedirs(sub_folder , exist_ok=True)
-
-    #     save_name = 'samples_ordinary.pt' if sampling_method == 'ordinary' else 'samples_half_denoising.pt'
-    #     save_path = os.path.join(self.args.image_folder, save_name)
-
-    #     img_id = 0  
-    #     all_collected_samples = []
-
-    #     for k in tqdm.tqdm(range(n_samples // batch_size)):
-
-    #         if self.config.data.dataset == 'MNIST':
-    #             samples = torch.rand(batch_size, 1, 28, 28, device=self.config.device)
-    #         else:
-    #             samples = torch.rand(batch_size, 3, 32, 32, device=self.config.device)
-
-    #         if sampling_method == 'ordinary':
-    #             all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
-    #         elif sampling_method == 'half_denoising' :
-    #             all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
-    #         else:
-    #             raise ValueError("You can only choose among ordinary and half_denoising methods")
-            
-    #         final_batch = all_samples[-1] # only the final image
-
-    #         if self.config.data.logit_transform:
-    #             final_batch = torch.sigmoid(final_batch)
-        
-    #         final_batch = final_batch.clamp(0, 1)
-            
-    #         # 3. Convert to uint8 (0-255) to save massive amounts of RAM
-    #         # (Float32 takes 4x more space; for 50k images this is critical)
-    #         final_batch_uint8 = (final_batch * 255).to(torch.uint8).cpu()
-            
-    #         all_collected_samples.append(final_batch_uint8)
-            
-    #         img_id += batch_size
-    #         print(f"Collected batch {k + 1} / {n_samples // batch_size} in RAM")
-
-    #         # for i in range(batch_size):
-    #         #     sample = final_batch[i]
-
-    #         #     if self.config.data.logit_transform:
-    #         #         sample = torch.sigmoid(sample)
-                
-    #         #     save_image(sample, os.path.join(sub_folder, f'img_{img_id}.png'))
-    #         #     img_id += 1
-    #         #     # print(f"Saved batch {img_id} images to {sub_folder}. Ready for FID calculation.")
-    #         # print(f"Finished batch {k + 1} % {n_samples // batch_size} ")
-
-    #     full_tensor = torch.cat(all_collected_samples, dim=0) # Shape: [50000, 3, 32, 32]
-
-    #     torch.save(full_tensor, save_path)
-    #     print(f"Saved {len(full_tensor)} images to {save_path}")
 
     def anneal_Langevin_dynamics_inpainting(self, x_mod, refer_image, scorenet, sigmas, n_steps_each=100,
                                             step_lr=0.000008):
