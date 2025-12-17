@@ -90,7 +90,7 @@ Sampling is computationally expensive; generating 10k images may take several ho
 
 <td>
 
-![Celeba Half-Denoising](assets/movie_ordinar_celeba.gif)
+![Celeba Half-Denoising](assets/celeba_small.gif)
 
 </td>
 
