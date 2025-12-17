@@ -217,27 +217,24 @@ class AnnealRunner():
                     #                                                          grad.abs().max()))
 
             return [x_mod.cpu()] #images
+        
+    def anneal_non_batched_Langevin_dynamics(self, x_mod, scorenet, sigmas, n_steps_each=100, step_lr=0.00002):
+        images = []
 
+        with torch.no_grad():
+            for c, sigma in tqdm.tqdm(enumerate(sigmas), total=len(sigmas), desc='annealed Langevin dynamics sampling'):
+                labels = torch.ones(x_mod.shape[0], device=x_mod.device) * c
+                labels = labels.long()
+                step_size = step_lr * (sigma / sigmas[-1]) ** 2
+                for s in range(n_steps_each):
+                    images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
+                    noise = torch.randn_like(x_mod) * np.sqrt(step_size * 2)
+                    grad = scorenet(x_mod, labels)
+                    x_mod = x_mod + step_size * grad + noise
+                    # print("class: {}, step_size: {}, mean {}, max {}".format(c, step_size, grad.abs().mean(),
+                    #                                                          grad.abs().max()))
 
-    # def custom_anneal_Langevin_dynamics(self, x_mod, scorenet, sigmas, n_steps_each=100, step_lr=0.00002):
-    #     images = []
-    #     with torch.no_grad():
-    #         for c, sigma in tqdm.tqdm(enumerate(sigmas), total=len(sigmas), desc='custom Langevin dynamics sampling'):
-    #             labels = torch.ones(x_mod.shape[0], device=x_mod.device) * c
-    #             labels = labels.long()
-    #             # Calculate eps
-    #             step_size = step_lr * (sigma / sigmas[-1]) ** 2
-    #             for s in range(n_steps_each):
-    #                 images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
-    #                 noise = torch.randn_like(x_mod)
-    #                 # score of current x_mod (which is xt tilde)
-    #                 grad = scorenet(x_mod, labels)
-    #                 # xt+1 = xt tild + eps/2 * score(xt tilde)
-    #                 x_next = x_mod + (step_size / 2) * grad
-    #                 # xt + sqt(eps) * zt
-    #                 x_noise_component = x_next + np.sqrt(step_size) * noise
-    #                 x_mod = torch.max(x_mod, x_noise_component)
-    #         return images
+            return images
 
     def half_denoising_anneal_Langevin_dynamics(self, x_mod, scorenet, sigmas, n_steps_each=100, step_lr=0.00002):
         # images = []
@@ -264,6 +261,31 @@ class AnnealRunner():
 
             return [x_mod.cpu()] # images
 
+    def half_denoising_anneal_non_batched_Langevin_dynamics(self, x_mod, scorenet, sigmas, n_steps_each=100, step_lr=0.00002):
+        images = []
+
+        with torch.no_grad():
+            for c, sigma in tqdm.tqdm(enumerate(sigmas), total=len(sigmas), desc='half-denoising Langevin dynamics sampling'):
+                labels = torch.ones(x_mod.shape[0], device=x_mod.device) * c
+                labels = labels.long()
+                step_size = step_lr * (sigma / sigmas[-1]) ** 2
+                for s in range(n_steps_each):
+                    images.append(torch.clamp(x_mod, 0.0, 1.0).to('cpu'))
+
+                    noise = torch.randn_like(x_mod)
+                    # x_tilde = xt + sigma * zt
+                    x_tilde = x_mod + np.sqrt(2*step_size) * noise
+                    # x_tilde = x_mod + sigma * noise
+
+                    # score on x_tilde
+                    grad = scorenet(x_tilde, labels)
+
+                    # xt+1 = x_tilde + (sigma^2 / 2) * score(x_tilde)
+                    x_mod = x_tilde + step_size * grad
+                    # x_mod = x_tilde + (sigma ** 2 / 2) * grad
+
+            return images
+        
     def test(self):
         states = torch.load(os.path.join(self.args.log, 'checkpoint.pth'), map_location=self.config.device)
         score = CondRefineNetDilated(self.config).to(self.config.device)
@@ -290,9 +312,9 @@ class AnnealRunner():
             samples = torch.rand(grid_size ** 2, 1, 28, 28, device=self.config.device)
             # Using custom_anneal_Langevin_dynamics for MNIST 
             if sampling_method == 'ordinary':
-                all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+                all_samples = self.anneal_non_batched_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
             elif sampling_method == 'half_denoising' :
-                all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+                all_samples = self.half_denoising_anneal_non_batched_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
             else:
                 raise ValueError("You can only choose among ordinary and half_denoising methods")
 
