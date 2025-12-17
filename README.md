@@ -80,7 +80,6 @@ Sampling is computationally expensive; generating 10k images may take several ho
 <br>
 <br>
 
-## The different algorithms
 <table>
 <tr>
 <th>1 Annealed Langevin </th>
