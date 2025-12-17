@@ -78,5 +78,5 @@ Sampling is computationally expensive; generating 10k images may take several ho
 <br>
 <br>
 
-| CelebA |  ![Celeba](assets/celeba_large.gif)|
+![Celeba](assets/celeba_large.gif)
 
