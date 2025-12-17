@@ -337,9 +337,9 @@ class AnnealRunner():
             samples = torch.rand(grid_size ** 2, 3, 32, 32, device=self.config.device)
 
             if sampling_method == 'ordinary':
-                all_samples = self.anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
+                all_samples = self.anneal_non_batched_Langevin_dynamics(samples, score, sigmas, 100, 0.00002)
             elif sampling_method == 'half_denoising':
-                all_samples = self.half_denoising_anneal_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
+                all_samples = self.half_denoising_anneal_non_batched_Langevin_dynamics(samples, score, sigmas, 100, 0.00002) 
             else:
                 raise ValueError("You can only choose among ordinary and half_denoising methods")
 
